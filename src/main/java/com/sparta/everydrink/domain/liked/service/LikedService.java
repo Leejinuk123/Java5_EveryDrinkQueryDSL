@@ -33,7 +33,7 @@ public class LikedService {
         User currentUser = userRepository.findByUsername(user.getUsername())
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
-        Optional<Liked> existingLike = likedRepository.findByUserIdAndContentsIdAndContentsType(currentUser.getId(), likedRequestDto.getContentsId(), likedRequestDto.getContentsType());
+        Optional<Liked> existingLike = likedRepository.searchLiked(currentUser.getId(), likedRequestDto.getContentsId(), likedRequestDto.getContentsType());
 
         if (existingLike.isPresent()) {
             throw new IllegalArgumentException("이미 좋아요를 눌렀습니다.");
@@ -70,8 +70,12 @@ public class LikedService {
         User currentUser = userRepository.findByUsername(user.getUsername())
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
-        Liked existingLike = likedRepository.findByUserIdAndContentsIdAndContentsType(currentUser.getId(), likedRequestDto.getContentsId(), likedRequestDto.getContentsType())
-                .orElseThrow(() -> new IllegalArgumentException("좋아요가 존재하지 않습니다."));
+//        Liked existingLike = likedRepository.findByUserIdAndContentsIdAndContentsType(currentUser.getId(), likedRequestDto.getContentsId(), likedRequestDto.getContentsType())
+//                .orElseThrow(() -> new IllegalArgumentException("좋아요가 존재하지 않습니다."));
+
+        Liked existingLike = likedRepository.searchLiked(currentUser.getId(), likedRequestDto.getContentsId(), likedRequestDto.getContentsType()).orElseThrow(
+                () -> new IllegalArgumentException("좋아요가 존재하지 않습니다.")
+        );
 
         // 좋아요 수 감소
         // POST
