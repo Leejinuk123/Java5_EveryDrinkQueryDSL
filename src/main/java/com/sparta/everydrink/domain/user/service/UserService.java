@@ -59,7 +59,7 @@ public class UserService {
 
     //프로필 조회
     public ProfileResponseDto getProfile(User user) {
-        return new ProfileResponseDto(user.getUsername(), user.getNickname());
+        return userRepository.searchUser(user.getUsername());
     }
 
     //프로필 수정

@@ -18,6 +18,7 @@ import static com.sparta.everydrink.domain.user.entity.QUser.user;
 
 @RequiredArgsConstructor
 public class CommentRepositoryImpl implements CommentRepositoryQuery{
+
     private final JPAQueryFactory queryFactory;
 
     @Override
