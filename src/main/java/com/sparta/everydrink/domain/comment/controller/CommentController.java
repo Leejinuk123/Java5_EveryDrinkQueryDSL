@@ -5,10 +5,12 @@ import com.sparta.everydrink.domain.comment.dto.CommentResponseDto;
 import com.sparta.everydrink.domain.comment.repository.CommentRepository;
 import com.sparta.everydrink.domain.comment.service.CommentService;
 import com.sparta.everydrink.domain.common.CommonResponseDto;
+import com.sparta.everydrink.domain.post.dto.PostResponseDto;
 import com.sparta.everydrink.security.UserDetailsImpl;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -67,6 +69,17 @@ public class CommentController {
             @Valid @AuthenticationPrincipal UserDetailsImpl userDetails) {
         commentService.deleteComment(id, postId, userDetails.getUser());
         return ResponseEntity.ok().body("댓글 삭제 완료");
+    }
+
+    @GetMapping("/page/liked/{page}")
+    public ResponseEntity<CommonResponseDto<Page<CommentResponseDto>>> likedCommentFindAll(@PathVariable int page, @AuthenticationPrincipal UserDetailsImpl userDetails, @PathVariable String postId) {
+        Page<CommentResponseDto> comments = commentService.likedCommentFindAll(page, userDetails.getUser());
+        return ResponseEntity.ok()
+                .body(CommonResponseDto.<Page<CommentResponseDto>>builder()
+                        .statusCode(HttpStatus.OK.value())
+                        .message("댓글 페이지 조회 성공")
+                        .data(comments)
+                        .build());
     }
 
 }

@@ -4,12 +4,17 @@ import com.sparta.everydrink.domain.comment.dto.CommentRequestDto;
 import com.sparta.everydrink.domain.comment.dto.CommentResponseDto;
 import com.sparta.everydrink.domain.comment.entity.Comment;
 import com.sparta.everydrink.domain.comment.repository.CommentRepository;
+import com.sparta.everydrink.domain.post.dto.PostResponseDto;
 import com.sparta.everydrink.domain.post.entity.Post;
 import com.sparta.everydrink.domain.post.repository.PostRepository;
 import com.sparta.everydrink.domain.user.entity.User;
 import com.sparta.everydrink.domain.user.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.Comparator;
@@ -98,5 +103,11 @@ public class CommentService {
 
         commentRepository.delete(comment);
         return id + "번 댓글이 삭제되었습니다.";
+    }
+
+    @Transactional
+    public Page<CommentResponseDto> likedCommentFindAll(int page, User user) {
+        Pageable pageable = PageRequest.of(page - 1, 5, Sort.by(Sort.Direction.DESC, "createdAt"));
+        return commentRepository.likedCommentFindAll(user.getId(), pageable);
     }
 }

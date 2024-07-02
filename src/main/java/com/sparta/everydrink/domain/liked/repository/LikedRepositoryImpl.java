@@ -18,7 +18,8 @@ public class LikedRepositoryImpl implements LikedRepositoryQuery{
 
     @Override
     public Optional<Liked> searchLiked(Long user_id, Long contentsId, ContentsTypeEnum contentsType) {
-        return Optional.ofNullable(queryFactory.selectFrom(liked)
+        return Optional.ofNullable(queryFactory.select(liked)
+                        .from(liked)
                 .where(liked.user.id.eq(user_id)
                         .and(liked.contentsId.eq(contentsId))
                         .and(liked.contentsType.eq(contentsType)))
