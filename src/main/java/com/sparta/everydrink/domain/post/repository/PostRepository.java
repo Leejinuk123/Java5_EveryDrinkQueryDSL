@@ -1,6 +1,7 @@
 package com.sparta.everydrink.domain.post.repository;
 
 import com.sparta.everydrink.domain.post.dto.PostPageResponseDto;
+import com.sparta.everydrink.domain.post.dto.PostResponseDto;
 import com.sparta.everydrink.domain.post.entity.Post;
 import com.sparta.everydrink.domain.user.entity.User;
 import org.springframework.data.domain.Page;
@@ -11,7 +12,7 @@ import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
-public interface PostRepository extends JpaRepository<Post, Long> {
+public interface PostRepository extends JpaRepository<Post, Long>, PostRepositoryQuery {
 
     @Query(value = "SELECT p.id AS postId, u.id AS userId, p.title, p.content, u.username AS name, " +
             "p.created_at AS createdAt, p.modified_at AS updatedAt, " +
@@ -29,9 +30,9 @@ public interface PostRepository extends JpaRepository<Post, Long> {
                     "FROM post p " +
                     "WHERE p.created_at BETWEEN :startDate AND :endDate",
             nativeQuery = true)
-    Page<PostPageResponseDto> findPostPages(@Param("startDate") String startDate,
-                                            @Param("endDate") String endDate,
-                                            Pageable pageable);
+    Page<PostResponseDto> findPostPages(@Param("startDate") String startDate,
+                                        @Param("endDate") String endDate,
+                                        Pageable pageable);
 
 
     List<Post> findByUserInOrderByCreatedAtDesc(List<User> followedUsers);

@@ -1,5 +1,6 @@
 package com.sparta.everydrink.domain.post.service;
 
+import com.sparta.everydrink.domain.liked.entity.ContentsTypeEnum;
 import com.sparta.everydrink.domain.post.dto.PostPageRequestDto;
 import com.sparta.everydrink.domain.post.dto.PostPageResponseDto;
 import com.sparta.everydrink.domain.post.dto.PostRequestDto;
@@ -86,7 +87,7 @@ public class PostService {
     }
 
     @Transactional
-    public Page<PostPageResponseDto> getPostPage(PostPageRequestDto requestDto) {
+    public Page<PostResponseDto> getPostPage(PostPageRequestDto requestDto) {
         log.info(requestDto.toString());
 
         Sort.Direction direction = Sort.Direction.DESC; //ASC 오름차순 , DESC 내림차순
@@ -103,9 +104,7 @@ public class PostService {
             throw new IllegalArgumentException("정렬은 CREATE 또는 LIKED 만 입력 가능합니다.");
 
         Sort sort = Sort.by(direction, sortBy);
-        Pageable pageable = PageRequest.of(requestDto.getPage() - 1, requestDto.getSize(), sort);
-
-        Page<PostPageResponseDto> postList = null;
+        Pageable pageable = PageRequest.of(requestDto.getPage() - 1, 5, sort);
 
         //---날짜 부분 ---
         LocalDate lastDate = LocalDate.now();
@@ -122,7 +121,7 @@ public class PostService {
             }
         }
 
-        postList = postRepository.findPostPages(firstDate.atStartOfDay().toString(), lastDate.atTime(LocalTime.MAX).toString(), pageable);
+        Page<PostResponseDto> postList = postRepository.findPostPages(firstDate.atStartOfDay().toString(), lastDate.atTime(LocalTime.MAX).toString(), pageable);
 
         if (postList.getTotalElements() <= 0) {
             log.error("페이지 없음");
@@ -133,6 +132,12 @@ public class PostService {
         }
 
         return postList;
+    }
+
+    @Transactional
+    public Page<PostResponseDto> getPostPageLiked(int page, User user) {
+        Pageable pageable = PageRequest.of(page - 1, 5, Sort.by(Sort.Direction.DESC, "createdAt"));
+        return postRepository.likedPostFindAll(user.getId(), pageable);
     }
 
     //관리자 전용 게시글 수정 메서드

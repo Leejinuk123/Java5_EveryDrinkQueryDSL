@@ -6,10 +6,8 @@ import com.sparta.everydrink.domain.comment.dto.PostWithCommentsResponseDto;
 import com.sparta.everydrink.domain.comment.service.CommentService;
 import com.sparta.everydrink.domain.common.CommonResponseDto;
 import com.sparta.everydrink.domain.post.dto.PostPageRequestDto;
-import com.sparta.everydrink.domain.post.dto.PostPageResponseDto;
 import com.sparta.everydrink.domain.post.dto.PostRequestDto;
 import com.sparta.everydrink.domain.post.dto.PostResponseDto;
-import com.sparta.everydrink.domain.post.repository.PostRepository;
 import com.sparta.everydrink.domain.post.service.PostService;
 import com.sparta.everydrink.security.UserDetailsImpl;
 import jakarta.validation.Valid;
@@ -37,7 +35,6 @@ public class PostController {
 
     private final PostService postService;
     private final CommentService commentService;
-    private final PostRepository postRepository;
 
     // 게시물 등록
     @PostMapping
@@ -117,17 +114,28 @@ public class PostController {
                         .build());
     }
 
-    //페이지네이션
+//    페이지네이션
     @PostMapping("/page")
-    public ResponseEntity<CommonResponseDto<Page<PostPageResponseDto>>> getPostPage(
+    public ResponseEntity<CommonResponseDto<Page<PostResponseDto>>> getPostPage(
             @Valid @RequestBody PostPageRequestDto requestDto
     ) {
-        Page<PostPageResponseDto> page = postService.getPostPage(requestDto);
+        Page<PostResponseDto> page = postService.getPostPage(requestDto);
         return ResponseEntity.ok()
-                .body(CommonResponseDto.<Page<PostPageResponseDto>>builder()
+                .body(CommonResponseDto.<Page<PostResponseDto>>builder()
                         .statusCode(HttpStatus.OK.value())
                         .message("게시물 페이지 조회 성공")
                         .data(page)
+                        .build());
+    }
+
+    @GetMapping("/page/liked/{page}")
+    public ResponseEntity<CommonResponseDto<Page<PostResponseDto>>> likedPostFindAll(@PathVariable int page, @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        Page<PostResponseDto> posts = postService.getPostPageLiked(page, userDetails.getUser());
+        return ResponseEntity.ok()
+                .body(CommonResponseDto.<Page<PostResponseDto>>builder()
+                        .statusCode(HttpStatus.OK.value())
+                        .message("게시물 페이지 조회 성공")
+                        .data(posts)
                         .build());
     }
 }
