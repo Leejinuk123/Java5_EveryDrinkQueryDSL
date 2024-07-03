@@ -11,5 +11,5 @@ import java.util.List;
 public interface PostRepositoryQuery {
     Page<PostResponseDto> likedPostFindAll(Long user_id, Pageable pageable);
 
-    Page<PostResponseDto> followedPostFindAll(List<User> followedUsers, Pageable pageable);
+    Page<PostResponseDto> followedPostFindAll(List<User> followedUsers, Pageable pageable, String sortBy);
 }

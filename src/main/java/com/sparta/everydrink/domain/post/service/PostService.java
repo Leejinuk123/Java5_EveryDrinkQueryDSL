@@ -1,15 +1,12 @@
 package com.sparta.everydrink.domain.post.service;
 
-import com.sparta.everydrink.domain.liked.entity.ContentsTypeEnum;
 import com.sparta.everydrink.domain.post.dto.PostPageRequestDto;
-import com.sparta.everydrink.domain.post.dto.PostPageResponseDto;
 import com.sparta.everydrink.domain.post.dto.PostRequestDto;
 import com.sparta.everydrink.domain.post.dto.PostResponseDto;
 import com.sparta.everydrink.domain.post.entity.Post;
 import com.sparta.everydrink.domain.post.repository.PostRepository;
 import com.sparta.everydrink.domain.user.entity.User;
 import com.sparta.everydrink.domain.user.repository.UserRepository;
-import com.sparta.everydrink.security.UserDetailsImpl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;

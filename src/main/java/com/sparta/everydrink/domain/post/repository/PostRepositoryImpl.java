@@ -2,11 +2,13 @@ package com.sparta.everydrink.domain.post.repository;
 
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.PathBuilder;
 import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.sparta.everydrink.domain.liked.entity.ContentsTypeEnum;
 import com.sparta.everydrink.domain.post.dto.PostResponseDto;
+import com.sparta.everydrink.domain.post.entity.Post;
 import com.sparta.everydrink.domain.post.entity.QPost;
 import com.sparta.everydrink.domain.user.entity.QUser;
 import com.sparta.everydrink.domain.user.entity.User;
@@ -68,33 +70,52 @@ public class PostRepositoryImpl implements PostRepositoryQuery{
     }
 
     @Override
-    public Page<PostResponseDto> followedPostFindAll(List<User> followedUsers, Pageable pageable) {
+    public Page<PostResponseDto> followedPostFindAll(List<User> followedUsers, Pageable pageable, String sortBy) {
         List<Long> userIds = followedUsers.stream().map(User::getId).collect(Collectors.toList());
 
-        List<PostResponseDto> results = queryFactory
-                .select(Projections.bean(PostResponseDto.class,
-                        post.id,
-                        post.title,
-                        post.content,
-                        user.username,
-                        post.createdAt,
-                        post.modifiedAt,
-                        post.likeCount))
-                .from(post)
-                .leftJoin(post.user, user)
-                .where(post.user.id.in(userIds))
-                .orderBy(post.createdAt.desc())
-                .offset(pageable.getOffset())
-                .limit(pageable.getPageSize())
-                .fetch();
+        List<PostResponseDto> results;
+        if ("username".equals(sortBy)){
+            results = queryFactory
+                    .select(Projections.bean(PostResponseDto.class,
+                            post.id,
+                            post.title,
+                            post.content,
+                            user.username,
+                            post.createdAt,
+                            post.modifiedAt,
+                            post.likeCount))
+                    .from(post)
+                    .leftJoin(post.user, user)
+                    .where(post.user.id.in(userIds))
+                    .orderBy(post.user.username.asc())
+                    .offset(pageable.getOffset())
+                    .limit(pageable.getPageSize())
+                    .fetch();
 
+        } else{
+            results = queryFactory
+                    .select(Projections.bean(PostResponseDto.class,
+                            post.id,
+                            post.title,
+                            post.content,
+                            user.username,
+                            post.createdAt,
+                            post.modifiedAt,
+                            post.likeCount))
+                    .from(post)
+                    .leftJoin(post.user, user)
+                    .where(post.user.id.in(userIds))
+                    .orderBy(post.createdAt.asc())
+                    .offset(pageable.getOffset())
+                    .limit(pageable.getPageSize())
+                    .fetch();
+
+        }
         Long total = Optional.ofNullable(queryFactory
                 .select(post.count())
                 .from(post)
                 .where(post.user.id.in(userIds))
                 .fetchOne()).orElse(0L);
-
         return PageableExecutionUtils.getPage(results, pageable, () -> total);
     }
-
 }

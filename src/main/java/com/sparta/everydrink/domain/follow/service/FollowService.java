@@ -79,15 +79,28 @@ public class FollowService {
                 .map(Follow::getToUser)
                 .collect(Collectors.toList());
 
-        Pageable pageable = PageRequest.of(requestDto.getPage() - 1, requestDto.getSize(), Sort.by(Sort.Direction.DESC, "createdAt"));
+        //작성자명 정렬 기능 추가
 
-        Page<PostResponseDto> posts = postRepository.followedPostFindAll(followedUsers, pageable);
+        Sort.Direction direction = Sort.Direction.DESC; //ASC 오름차순 , DESC 내림차순
+        //- 생성일자 기준 최신 - 좋아요 많은 순
+
+        // --- 정렬 방식 ---
+        //CREATE  or  LIKED
+        String sortBy = "created_at";
+        if (requestDto.getSortBy().equals("CREATE")) {
+            sortBy = "createdAt";
+        } else if (requestDto.getSortBy().equals("USERNAME")) {
+            sortBy = "username";
+        } else
+            throw new IllegalArgumentException("정렬은 CREATE 또는 USERNAME 만 입력 가능합니다.");
+
+        Sort sort = Sort.by(direction, sortBy);
+
+        Pageable pageable = PageRequest.of(requestDto.getPage() - 1, requestDto.getSize(), sort);
+
+        Page<PostResponseDto> posts = postRepository.followedPostFindAll(followedUsers, pageable, sortBy);
 
         return posts;
-
-//        return posts.stream()
-//                .map(PostResponseDto::new)
-//                .collect(Collectors.toList());
 
     }
 }
