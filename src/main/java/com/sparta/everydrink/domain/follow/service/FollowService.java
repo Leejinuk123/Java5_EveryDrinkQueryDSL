@@ -26,17 +26,17 @@ public class FollowService {
 
     @Transactional
     public FollowResponseDto followUser(FollowRequestDto followRequestDto, UserDetailsImpl user) {
-        User currentUser = userRepository.findByUsername(user.getUsername())
+        User currentUser = userRepository.searchUser(user.getUsername())
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
-        User targetUser = userRepository.findByUsername(followRequestDto.getUsername())
+        User targetUser = userRepository.searchUser(followRequestDto.getUsername())
                 .orElseThrow(() -> new IllegalArgumentException("팔로우할 사용자를 찾을 수 없습니다."));
 
         if (currentUser.getUsername().equals(followRequestDto.getUsername())) {
             throw new IllegalArgumentException("본인은 팔로우할 수 없습니다.");
         }
 
-        if(followRepository.findByFromUserAndToUser(currentUser, targetUser).isPresent()) {
+        if(followRepository.checkDoubleFollow(currentUser, targetUser).isPresent()) {
             throw new IllegalArgumentException("이미 팔로우한 사용자입니다.");
         }
 
@@ -50,10 +50,10 @@ public class FollowService {
 
     @Transactional
     public FollowResponseDto unfollowUser(FollowRequestDto followRequestDto, UserDetailsImpl user){
-        User currentUser = userRepository.findByUsername(user.getUsername())
+        User currentUser = userRepository.searchUser(user.getUsername())
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
-        User targetUser = userRepository.findByUsername(followRequestDto.getUsername())
+        User targetUser = userRepository.searchUser(followRequestDto.getUsername())
                 .orElseThrow(() -> new IllegalArgumentException("팔로우할 사용자를 찾을 수 없습니다."));
 
         Follow follow = followRepository.findByFromUserAndToUser(currentUser, targetUser)

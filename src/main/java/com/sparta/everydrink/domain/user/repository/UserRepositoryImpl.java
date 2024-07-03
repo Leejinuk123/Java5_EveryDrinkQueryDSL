@@ -7,8 +7,11 @@ import com.sparta.everydrink.domain.liked.entity.ContentsTypeEnum;
 import com.sparta.everydrink.domain.liked.entity.QLiked;
 import com.sparta.everydrink.domain.post.entity.QPost;
 import com.sparta.everydrink.domain.user.dto.ProfileResponseDto;
+import com.sparta.everydrink.domain.user.entity.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
+
+import java.util.Optional;
 
 import static com.sparta.everydrink.domain.user.entity.QUser.user;
 
@@ -19,7 +22,7 @@ public class UserRepositoryImpl implements UserRepositoryQuery{
     private final JPAQueryFactory jpaQueryFactory;
 
     @Override
-    public ProfileResponseDto searchUser(String username) {
+    public ProfileResponseDto searchUserProfile(String username) {
         QPost post = QPost.post;
         QComment comment = QComment.comment;
         QLiked liked = QLiked.liked;
@@ -38,5 +41,14 @@ public class UserRepositoryImpl implements UserRepositoryQuery{
                         .and(liked.contentsType.eq(ContentsTypeEnum.COMMENT)))
                 .where(user.username.eq(username))
                 .fetchOne();
+    }
+
+    @Override
+    public Optional<User> searchUser(String username) {
+        return Optional.ofNullable(jpaQueryFactory
+                .select(user)
+                .from(user)
+                .where(user.username.eq(username))
+                .fetchOne());
     }
 }

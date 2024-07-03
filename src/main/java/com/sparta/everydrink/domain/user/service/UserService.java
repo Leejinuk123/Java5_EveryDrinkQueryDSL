@@ -9,7 +9,6 @@ import com.sparta.everydrink.domain.user.entity.User;
 import com.sparta.everydrink.domain.user.entity.UserRoleEnum;
 import com.sparta.everydrink.domain.user.entity.UserStatusEnum;
 import com.sparta.everydrink.domain.user.repository.UserRepository;
-import com.sparta.everydrink.security.UserDetailsImpl;
 import com.sparta.everydrink.security.jwt.JwtService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
@@ -59,7 +58,7 @@ public class UserService {
 
     //프로필 조회
     public ProfileResponseDto getProfile(User user) {
-        return userRepository.searchUser(user.getUsername());
+        return userRepository.searchUserProfile(user.getUsername());
     }
 
     //프로필 수정
