@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.support.PageableExecutionUtils;
 
 import java.util.List;
 import java.util.Optional;
@@ -57,6 +58,6 @@ public class CommentRepositoryImpl implements CommentRepositoryQuery{
                         .and(liked.user.id.eq(user_id)))
                 .fetchOne()).orElse(0L);
 
-        return new PageImpl<>(results, pageable, total);
+        return PageableExecutionUtils.getPage(results, pageable, () -> total);
     }
 }

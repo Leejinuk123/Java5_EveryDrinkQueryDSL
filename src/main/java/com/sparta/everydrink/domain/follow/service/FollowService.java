@@ -4,6 +4,7 @@ import com.sparta.everydrink.domain.follow.dto.FollowRequestDto;
 import com.sparta.everydrink.domain.follow.dto.FollowResponseDto;
 import com.sparta.everydrink.domain.follow.entity.Follow;
 import com.sparta.everydrink.domain.follow.repository.FollowRepository;
+import com.sparta.everydrink.domain.post.dto.PostPageRequestDto;
 import com.sparta.everydrink.domain.post.dto.PostResponseDto;
 import com.sparta.everydrink.domain.post.entity.Post;
 import com.sparta.everydrink.domain.post.repository.PostRepository;
@@ -12,6 +13,10 @@ import com.sparta.everydrink.domain.user.repository.UserRepository;
 import com.sparta.everydrink.security.UserDetailsImpl;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -65,8 +70,8 @@ public class FollowService {
     }
 
     @Transactional
-    public List<PostResponseDto> getFollowedUserPosts(UserDetailsImpl user) {
-        User currentUser = userRepository.findByUsername(user.getUsername())
+    public Page<PostResponseDto> getFollowedUserPosts(UserDetailsImpl user, PostPageRequestDto requestDto) {
+        User currentUser = userRepository.searchUser(user.getUsername())
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
         List<User> followedUsers = followRepository.findByFromUser(currentUser)
@@ -74,11 +79,15 @@ public class FollowService {
                 .map(Follow::getToUser)
                 .collect(Collectors.toList());
 
-        List<Post> posts = postRepository.findByUserInOrderByCreatedAtDesc(followedUsers);
+        Pageable pageable = PageRequest.of(requestDto.getPage() - 1, requestDto.getSize(), Sort.by(Sort.Direction.DESC, "createdAt"));
 
-        return posts.stream()
-                .map(PostResponseDto::new)
-                .collect(Collectors.toList());
+        Page<PostResponseDto> posts = postRepository.followedPostFindAll(followedUsers, pageable);
+
+        return posts;
+
+//        return posts.stream()
+//                .map(PostResponseDto::new)
+//                .collect(Collectors.toList());
 
     }
 }

@@ -4,17 +4,17 @@ import com.sparta.everydrink.domain.common.CommonResponseDto;
 import com.sparta.everydrink.domain.follow.dto.FollowRequestDto;
 import com.sparta.everydrink.domain.follow.dto.FollowResponseDto;
 import com.sparta.everydrink.domain.follow.service.FollowService;
-import com.sparta.everydrink.domain.liked.dto.LikedResponseDto;
+import com.sparta.everydrink.domain.post.dto.PostPageRequestDto;
 import com.sparta.everydrink.domain.post.dto.PostResponseDto;
 import com.sparta.everydrink.security.UserDetailsImpl;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @Slf4j
 @RestController
@@ -48,14 +48,15 @@ public class FollowController {
                         .build());
     }
 
-    @GetMapping
-    public ResponseEntity<CommonResponseDto<List<PostResponseDto>>> getFollowedUserPosts(@AuthenticationPrincipal UserDetailsImpl user){
-        List<PostResponseDto> responseDtos = followService.getFollowedUserPosts(user);
+    @PostMapping("/page")
+    public ResponseEntity<CommonResponseDto<Page<PostResponseDto>>> getFollowedUserPosts(@AuthenticationPrincipal UserDetailsImpl user,
+                                                                                         @Valid @RequestBody PostPageRequestDto requestDto){
+        Page<PostResponseDto> responses = followService.getFollowedUserPosts(user, requestDto);
         return ResponseEntity.ok()
-                .body(CommonResponseDto.<List<PostResponseDto>>builder()
+                .body(CommonResponseDto.<Page<PostResponseDto>>builder()
                         .statusCode(HttpStatus.OK.value())
                         .message("팔로우한 사용자의 게시물 조회 성공")
-                        .data(responseDtos)
+                        .data(responses)
                         .build());
     }
 
