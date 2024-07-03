@@ -2,7 +2,6 @@ package com.sparta.everydrink.domain.user.repository;
 
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import com.sparta.everydrink.domain.comment.dto.CommentResponseDto;
 import com.sparta.everydrink.domain.comment.entity.QComment;
 import com.sparta.everydrink.domain.liked.entity.ContentsTypeEnum;
 import com.sparta.everydrink.domain.liked.entity.QLiked;
@@ -25,36 +24,19 @@ public class UserRepositoryImpl implements UserRepositoryQuery{
         QComment comment = QComment.comment;
         QLiked liked = QLiked.liked;
 
-        // 사용자가 좋아요한 게시글 수 조회
-        Long likedPosts = jpaQueryFactory
-                .select(post.count())
-                .from(post)
-                .join(liked).on(post.id.eq(liked.contentsId)
-                        .and(liked.contentsType.eq(ContentsTypeEnum.POST))
-                        .and(liked.user.username.eq(username)))
-                .fetchOne();
-
-        // 사용자가 좋아요한 댓글 수 조회
-        Long likedComments = jpaQueryFactory
-                .select(comment.count())
-                .from(comment)
-                .join(liked).on(comment.id.eq(liked.contentsId)
-                        .and(liked.contentsType.eq(ContentsTypeEnum.COMMENT))
-                        .and(liked.user.username.eq(username)))
-                .fetchOne();
-
-        // 사용자 정보 및 좋아요한 게시글 및 댓글 수 조회
-        ProfileResponseDto dto = jpaQueryFactory
+        return jpaQueryFactory
                 .select(Projections.bean(ProfileResponseDto.class,
                         user.username,
-                        user.nickname))
+                        user.nickname,
+                        post.count().as("likedPosts"),
+                        comment.count().as("likedComments")))
                 .from(user)
+                .leftJoin(liked).on(liked.user.username.eq(user.username))
+                .leftJoin(post).on(liked.contentsId.eq(post.id)
+                        .and(liked.contentsType.eq(ContentsTypeEnum.POST)))
+                .leftJoin(comment).on(liked.contentsId.eq(comment.id)
+                        .and(liked.contentsType.eq(ContentsTypeEnum.COMMENT)))
                 .where(user.username.eq(username))
                 .fetchOne();
-
-        dto.setLikedPosts(likedPosts);
-        dto.setLikedComments(likedComments);
-
-        return dto;
     }
 }

@@ -23,15 +23,12 @@ public class CommentRepositoryImpl implements CommentRepositoryQuery{
 
     @Override
     public Page<CommentResponseDto> likedCommentFindAll(Long user_id, Pageable pageable) {
-
 //        private Long id;
 //        private String content;
 //        @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
 //        private LocalDateTime createdAt;
 //        @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
 //        private LocalDateTime updatedAt;
-//
-//
 //        private Long likeCount;
         List<CommentResponseDto> results = queryFactory
                 .select(Projections.bean(CommentResponseDto.class,
