@@ -3,6 +3,7 @@ package com.sparta.everydrink.domain.follow.controller;
 import com.sparta.everydrink.domain.common.CommonResponseDto;
 import com.sparta.everydrink.domain.follow.dto.FollowRequestDto;
 import com.sparta.everydrink.domain.follow.dto.FollowResponseDto;
+import com.sparta.everydrink.domain.follow.dto.TopFollowerResponseDto;
 import com.sparta.everydrink.domain.follow.service.FollowService;
 import com.sparta.everydrink.domain.post.dto.PostPageRequestDto;
 import com.sparta.everydrink.domain.post.dto.PostResponseDto;
@@ -15,6 +16,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -56,6 +59,17 @@ public class FollowController {
                 .body(CommonResponseDto.<Page<PostResponseDto>>builder()
                         .statusCode(HttpStatus.OK.value())
                         .message("팔로우한 사용자의 게시물 조회 성공")
+                        .data(responses)
+                        .build());
+    }
+
+    @GetMapping("/top/{count}")
+    public ResponseEntity<CommonResponseDto<List<TopFollowerResponseDto>>> getFollowerTopRank(@PathVariable int count){
+        List<TopFollowerResponseDto> responses = followService.getFollowerTopRank(count);
+        return ResponseEntity.ok()
+                .body(CommonResponseDto.<List<TopFollowerResponseDto>>builder()
+                        .statusCode(HttpStatus.OK.value())
+                        .message("팔로우 Top "+ count + " 목록 조회 성공")
                         .data(responses)
                         .build());
     }

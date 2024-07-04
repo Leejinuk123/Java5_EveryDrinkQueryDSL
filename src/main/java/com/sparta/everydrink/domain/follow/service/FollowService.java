@@ -1,7 +1,9 @@
 package com.sparta.everydrink.domain.follow.service;
 
+import com.sparta.everydrink.domain.common.CommonResponseDto;
 import com.sparta.everydrink.domain.follow.dto.FollowRequestDto;
 import com.sparta.everydrink.domain.follow.dto.FollowResponseDto;
+import com.sparta.everydrink.domain.follow.dto.TopFollowerResponseDto;
 import com.sparta.everydrink.domain.follow.entity.Follow;
 import com.sparta.everydrink.domain.follow.repository.FollowRepository;
 import com.sparta.everydrink.domain.post.dto.PostPageRequestDto;
@@ -17,6 +19,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -31,19 +34,19 @@ public class FollowService {
 
     @Transactional
     public FollowResponseDto followUser(FollowRequestDto followRequestDto, UserDetailsImpl user) {
-        User currentUser = userRepository.searchUser(user.getUsername())
+        User currentUser = userRepository.findByUsername(user.getUsername())
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
-        User targetUser = userRepository.searchUser(followRequestDto.getUsername())
+        User targetUser = userRepository.findByUsername(followRequestDto.getUsername())
                 .orElseThrow(() -> new IllegalArgumentException("팔로우할 사용자를 찾을 수 없습니다."));
 
         if (currentUser.getUsername().equals(followRequestDto.getUsername())) {
             throw new IllegalArgumentException("본인은 팔로우할 수 없습니다.");
         }
 
-        if(followRepository.checkDoubleFollow(currentUser, targetUser).isPresent()) {
-            throw new IllegalArgumentException("이미 팔로우한 사용자입니다.");
-        }
+//        if(followRepository.checkDoubleFollow(currentUser, targetUser).isPresent()) {
+//            throw new IllegalArgumentException("이미 팔로우한 사용자입니다.");
+//        }
 
 
         Follow follow = new Follow(currentUser, targetUser);
@@ -98,9 +101,12 @@ public class FollowService {
 
         Pageable pageable = PageRequest.of(requestDto.getPage() - 1, requestDto.getSize(), sort);
 
-        Page<PostResponseDto> posts = postRepository.followedPostFindAll(followedUsers, pageable, sortBy);
+        return postRepository.followedPostFindAll(followedUsers, pageable);
 
-        return posts;
+    }
 
+    public List<TopFollowerResponseDto> getFollowerTopRank(int count) {
+        if (count <= 0) throw new IllegalArgumentException("count 는 0보다 커야합니다.");
+        return followRepository.getFollowerTop(count);
     }
 }

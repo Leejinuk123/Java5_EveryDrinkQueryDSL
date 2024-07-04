@@ -1,26 +1,20 @@
 package com.sparta.everydrink.domain.post.repository;
 
+import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
-import com.querydsl.core.types.dsl.Expressions;
-import com.querydsl.core.types.dsl.PathBuilder;
-import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.sparta.everydrink.domain.liked.entity.ContentsTypeEnum;
 import com.sparta.everydrink.domain.post.dto.PostResponseDto;
-import com.sparta.everydrink.domain.post.entity.Post;
-import com.sparta.everydrink.domain.post.entity.QPost;
-import com.sparta.everydrink.domain.user.entity.QUser;
 import com.sparta.everydrink.domain.user.entity.User;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.stereotype.Repository;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -31,7 +25,8 @@ import static com.sparta.everydrink.domain.user.entity.QUser.user;
 
 @Repository
 @RequiredArgsConstructor
-public class PostRepositoryImpl implements PostRepositoryQuery{
+@Slf4j(topic = "PostRepositoryImpl")
+public class PostRepositoryImpl implements PostRepositoryQuery {
 
     private final JPAQueryFactory queryFactory;
 
@@ -70,52 +65,45 @@ public class PostRepositoryImpl implements PostRepositoryQuery{
     }
 
     @Override
-    public Page<PostResponseDto> followedPostFindAll(List<User> followedUsers, Pageable pageable, String sortBy) {
+    public Page<PostResponseDto> followedPostFindAll(List<User> followedUsers, Pageable pageable) {
+        log.info(pageable.getSort().toString());
         List<Long> userIds = followedUsers.stream().map(User::getId).collect(Collectors.toList());
 
-        List<PostResponseDto> results;
-        if ("username".equals(sortBy)){
-            results = queryFactory
-                    .select(Projections.bean(PostResponseDto.class,
-                            post.id,
-                            post.title,
-                            post.content,
-                            user.username,
-                            post.createdAt,
-                            post.modifiedAt,
-                            post.likeCount))
-                    .from(post)
-                    .leftJoin(post.user, user)
-                    .where(post.user.id.in(userIds))
-                    .orderBy(post.user.username.asc())
-                    .offset(pageable.getOffset())
-                    .limit(pageable.getPageSize())
-                    .fetch();
+        // Sort 객체 추출
+        Sort sort = pageable.getSort();
+        OrderSpecifier<?> orderSpecifier = new OrderSpecifier<>(Order.DESC, post.createdAt);
 
-        } else{
-            results = queryFactory
-                    .select(Projections.bean(PostResponseDto.class,
-                            post.id,
-                            post.title,
-                            post.content,
-                            user.username,
-                            post.createdAt,
-                            post.modifiedAt,
-                            post.likeCount))
-                    .from(post)
-                    .leftJoin(post.user, user)
-                    .where(post.user.id.in(userIds))
-                    .orderBy(post.createdAt.asc())
-                    .offset(pageable.getOffset())
-                    .limit(pageable.getPageSize())
-                    .fetch();
-
+        // Sort 객체에서 properties 추출
+        for (Sort.Order order : sort) {
+            System.out.println("Property: " + order.getProperty() + ", Direction: " + order.getDirection());
+            if("username".equals(order.getProperty())){
+                orderSpecifier = new OrderSpecifier<>(Order.DESC, post.user.username);
+            }
         }
+
+        List<PostResponseDto> results = queryFactory
+                .select(Projections.bean(PostResponseDto.class,
+                        post.id,
+                        post.title,
+                        post.content,
+                        user.username,
+                        post.createdAt,
+                        post.modifiedAt,
+                        post.likeCount))
+                .from(post)
+                .leftJoin(post.user, user)
+                .where(post.user.id.in(userIds))
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .orderBy(orderSpecifier)
+                .fetch();
+
         Long total = Optional.ofNullable(queryFactory
                 .select(post.count())
                 .from(post)
                 .where(post.user.id.in(userIds))
                 .fetchOne()).orElse(0L);
+
         return PageableExecutionUtils.getPage(results, pageable, () -> total);
     }
 }
