@@ -75,7 +75,7 @@ public class PostRepositoryImpl implements PostRepositoryQuery {
 
         // Sort 객체에서 properties 추출
         for (Sort.Order order : sort) {
-            System.out.println("Property: " + order.getProperty() + ", Direction: " + order.getDirection());
+            //System.out.println("Property: " + order.getProperty() + ", Direction: " + order.getDirection());
             if("username".equals(order.getProperty())){
                 orderSpecifier = new OrderSpecifier<>(Order.DESC, post.user.username);
             }
